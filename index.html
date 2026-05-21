@@ -715,6 +715,212 @@ body {
   margin-top: 6px;
   font-style: italic;
 }
+
+/* ============ PACKING LIST EDITING ============ */
+.pack-item-edit-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-3); font-size: 10px;
+  padding: 6px 10px; margin-left: 4px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em; font-weight: 500;
+  border-radius: 4px;
+  line-height: 1;
+}
+.pack-item-edit-btn:hover { color: var(--accent); background: var(--surface-2); }
+.pack-item-edit-btn.active { color: var(--accent); }
+
+.pack-item.custom .item-name:after {
+  content: " · CUSTOM";
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.edit-row {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px 12px;
+  margin: 4px 0 14px;
+  display: none;
+  animation: slideDown 0.18s ease-out;
+  border-left: 3px solid var(--accent);
+}
+.edit-row.active { display: block; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.edit-row .row-line {
+  display: flex; gap: 12px; align-items: center; margin-bottom: 10px;
+}
+.edit-row .row-line:last-of-type { margin-bottom: 0; }
+.edit-row .field-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  min-width: 56px;
+  font-weight: 500;
+}
+.edit-row input[type="text"], .edit-row input[type="number"] {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 11px;
+  font-family: var(--font-body); font-size: 14px; color: var(--ink);
+  outline: none;
+  min-width: 0;
+}
+.edit-row input:focus { border-color: var(--accent); }
+.qty-stepper {
+  display: inline-flex; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden;
+  flex-shrink: 0;
+}
+.qty-stepper button {
+  background: none; border: none; cursor: pointer;
+  padding: 8px 16px; font-size: 18px; font-weight: 600;
+  color: var(--ink); line-height: 1;
+  font-family: var(--font-body);
+}
+.qty-stepper button:active { background: var(--surface-2); }
+.qty-stepper .qty-val {
+  font-family: var(--font-mono); font-weight: 500;
+  min-width: 36px; text-align: center; padding: 8px 0;
+  border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  font-size: 14px;
+}
+.edit-row .actions {
+  display: flex; gap: 8px; justify-content: flex-end;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  align-items: center;
+}
+.edit-row .actions button {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 6px; padding: 8px 14px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink); font-weight: 500;
+}
+.edit-row .actions .btn-save {
+  background: var(--ink); color: var(--bg); border-color: var(--ink);
+}
+.edit-row .actions .btn-delete {
+  color: var(--accent); border-color: var(--accent); margin-right: auto;
+}
+
+.add-item-btn {
+  display: flex; align-items: center; justify-content: center;
+  padding: 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 10px;
+  background: transparent;
+  width: 100%;
+  font-weight: 500;
+}
+.add-item-btn:hover {
+  background: var(--surface); color: var(--ink); border-color: var(--ink);
+}
+.add-item-btn .plus {
+  color: var(--accent); margin-right: 8px; font-size: 14px; font-weight: 700;
+}
+
+.reset-pack-link {
+  text-align: center; padding: 14px;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-3); cursor: pointer;
+  background: none; border: none; width: 100%;
+  margin-top: 16px;
+  font-weight: 500;
+}
+.reset-pack-link:hover { color: var(--accent); }
+
+/* ============ TEMPLATE SECTION ============ */
+.template-section {
+  margin-top: 28px;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent);
+}
+.template-section .section-label {
+  margin: 0 0 8px;
+}
+.template-section .section-label:before {
+  display: none;
+}
+.template-section .descr {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.template-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+.template-status.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.template-status.empty {
+  background: var(--surface-2);
+  color: var(--ink-3);
+}
+.template-status .meta {
+  font-size: 10px;
+  color: var(--ink-3);
+  font-style: italic;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.template-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.template-btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-weight: 500;
+  flex: 1;
+  min-width: 130px;
+}
+.template-btn:active { transform: scale(0.98); }
+.template-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.template-btn-clear {
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
 </style>
 </head>
 <body>
@@ -847,6 +1053,8 @@ const PROFILE = {
 
 const STORAGE_KEY = 'travelTime_v1';
 const STATE_KEY = 'travelTime_state';
+const TEMPLATE_KEY = 'travelTime_template_v1';
+const wxCache = {}; // trip.id → weather data, so re-renders after customizations skip refetch
 
 // ---------- Storage ----------
 function loadTrips() {
@@ -872,6 +1080,47 @@ function deleteTrip(id) {
   saveTrips(loadTrips().filter(t => t.id !== id));
 }
 function uid() { return 'trip_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+// ---------- Template (default customizations auto-applied to new trips) ----------
+function loadTemplate() {
+  try {
+    const raw = localStorage.getItem(TEMPLATE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+function saveTemplate(customizations) {
+  // Strip per-trip custom item IDs — new IDs are generated when applied
+  const tmpl = {
+    overrides: { ...(customizations.overrides || {}) },
+    custom: (customizations.custom || []).map(c => ({
+      category: c.category, name: c.name, qty: c.qty, note: c.note
+    })),
+    savedAt: new Date().toISOString()
+  };
+  localStorage.setItem(TEMPLATE_KEY, JSON.stringify(tmpl));
+}
+function clearTemplateStorage() { localStorage.removeItem(TEMPLATE_KEY); }
+function instantiateTemplate() {
+  // Returns a customizations object suitable for a brand-new trip
+  const tmpl = loadTemplate();
+  if (!tmpl) return { overrides: {}, custom: [] };
+  return {
+    overrides: { ...(tmpl.overrides || {}) },
+    custom: (tmpl.custom || []).map(c => ({
+      ...c,
+      id: 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5)
+    }))
+  };
+}
+function templateSummary() {
+  const tmpl = loadTemplate();
+  if (!tmpl) return null;
+  return {
+    overrideCount: Object.keys(tmpl.overrides || {}).length,
+    customCount: (tmpl.custom || []).length,
+    savedAt: tmpl.savedAt || null
+  };
+}
 
 // ---------- View routing ----------
 let currentView = 'home';
@@ -1061,7 +1310,8 @@ document.getElementById('saveTripBtn').onclick = () => {
     endDate: formState.end,
     notes: formState.notes,
     saved: editingTripId ? (getTrip(editingTripId).saved || {}) : {},
-    checked: editingTripId ? (getTrip(editingTripId).checked || {}) : {}
+    checked: editingTripId ? (getTrip(editingTripId).checked || {}) : {},
+    customizations: editingTripId ? (getTrip(editingTripId).customizations || { overrides: {}, custom: [] }) : instantiateTemplate()
   };
   upsertTrip(trip);
   showView('detail', { tripId: trip.id });
@@ -1098,6 +1348,7 @@ async function renderDetail(tripId) {
   // Weather (async)
   document.getElementById('weatherBlock').innerHTML = `<div class="weather-loading">Fetching forecast…</div>`;
   const wx = await fetchWeather(trip.lat, trip.lon, trip.startDate, trip.endDate);
+  wxCache[trip.id] = wx;
   renderWeather(wx);
 
   // Packing list
@@ -1402,7 +1653,48 @@ function estimateVolume(cats) {
   return Math.round(total);
 }
 
+// Apply per-trip customizations on top of rule-generated packing list
+function applyCustomizations(packResult, trip) {
+  const c = trip.customizations || { overrides: {}, custom: [] };
+
+  // Overrides: change qty, change note, or delete
+  for (const cat of packResult.cats) {
+    const kept = [];
+    for (const it of cat.items) {
+      const key = `${cat.name}::${it.name}`;
+      const ov = c.overrides[key];
+      if (ov && ov.deleted) continue;
+      const newIt = { ...it };
+      if (ov && ov.qty !== undefined && ov.qty !== null) newIt.qty = ov.qty;
+      if (ov && ov.note !== undefined) newIt.note = ov.note;
+      kept.push(newIt);
+    }
+    cat.items = kept;
+  }
+
+  // Custom items: append to existing category or create new one
+  for (const ci of (c.custom || [])) {
+    let cat = packResult.cats.find(cc => cc.name === ci.category);
+    if (!cat) {
+      cat = { name: ci.category, items: [] };
+      packResult.cats.push(cat);
+    }
+    cat.items.push({
+      name: ci.name,
+      qty: ci.qty,
+      note: ci.note || null,
+      custom: true,
+      customId: ci.id
+    });
+  }
+
+  return packResult;
+}
+
 function renderPackingList(trip, result) {
+  // Apply customizations before rendering
+  result = applyCustomizations(result, trip);
+
   // Warnings
   const warnBox = document.getElementById('packWarnBlock');
   warnBox.innerHTML = result.warnings.map(w => `
@@ -1415,33 +1707,121 @@ function renderPackingList(trip, result) {
   // List
   const list = document.getElementById('packingList');
   const checked = trip.checked || {};
-  list.innerHTML = result.cats.map(cat => {
+
+  list.innerHTML = result.cats.map((cat, catIdx) => {
     if (!cat.items.length) return '';
     const total = cat.items.reduce((s,i) => s + (i.qty || 1), 0);
     return `
-      <div class="pack-category">
+      <div class="pack-category" data-cat-idx="${catIdx}">
         <div class="pack-category-head">
           <h4>${escapeHtml(cat.name)}</h4>
           <div class="count">${total} ITEM${total===1?'':'S'}</div>
         </div>
-        ${cat.items.map(it => {
+        ${cat.items.map((it, itIdx) => {
           const key = cat.name + '::' + it.name;
           const isChecked = !!checked[key];
+          const editId = `edit_${catIdx}_${itIdx}`;
           return `
-            <div class="pack-item ${isChecked ? 'checked' : ''}" data-key="${escapeHtml(key)}">
+            <div class="pack-item ${isChecked ? 'checked' : ''} ${it.custom ? 'custom' : ''}" data-key="${escapeHtml(key)}">
               <div class="check"></div>
               <div class="item-name">${escapeHtml(it.name)}${it.note ? ` <span class="note">${escapeHtml(it.note)}</span>` : ''}</div>
               <div class="qty">×${it.qty}</div>
+              <button class="pack-item-edit-btn" data-action="edit-toggle" data-edit-id="${editId}">EDIT</button>
+            </div>
+            <div class="edit-row" id="${editId}" data-cat="${escapeHtml(cat.name)}" data-name="${escapeHtml(it.name)}" data-custom="${it.custom ? '1' : '0'}" data-custom-id="${it.customId || ''}">
+              <div class="row-line">
+                <div class="field-label">Quantity</div>
+                <div class="qty-stepper">
+                  <button data-step="-1">−</button>
+                  <span class="qty-val">${it.qty}</span>
+                  <button data-step="1">+</button>
+                </div>
+              </div>
+              <div class="row-line">
+                <div class="field-label">Note</div>
+                <input type="text" class="note-edit" value="${escapeHtml(it.note || '')}" placeholder="Optional">
+              </div>
+              <div class="actions">
+                <button class="btn-delete" data-action="delete">Delete</button>
+                <button data-action="cancel">Cancel</button>
+                <button class="btn-save" data-action="save">Save</button>
+              </div>
             </div>
           `;
         }).join('')}
+        <button class="add-item-btn" data-action="add-toggle" data-add-id="add_${catIdx}">
+          <span class="plus">+</span> Add item to ${escapeHtml(cat.name)}
+        </button>
+        <div class="edit-row" id="add_${catIdx}" data-cat="${escapeHtml(cat.name)}">
+          <div class="row-line">
+            <div class="field-label">Name</div>
+            <input type="text" class="name-add" placeholder="e.g. Electric shaver">
+          </div>
+          <div class="row-line">
+            <div class="field-label">Quantity</div>
+            <div class="qty-stepper">
+              <button data-step="-1">−</button>
+              <span class="qty-val">1</span>
+              <button data-step="1">+</button>
+            </div>
+          </div>
+          <div class="row-line">
+            <div class="field-label">Note</div>
+            <input type="text" class="note-add" placeholder="Optional">
+          </div>
+          <div class="actions">
+            <button data-action="add-cancel">Cancel</button>
+            <button class="btn-save" data-action="add-save">Add item</button>
+          </div>
+        </div>
       </div>
     `;
-  }).join('');
+  }).join('') + `
+    <button class="reset-pack-link" data-action="reset-customizations">Reset all customizations</button>
+    <div class="template-section">
+      <div class="section-label">Default template</div>
+      <p class="descr">Save the customizations from this trip as a template. They'll auto-apply to every new trip you create after that — existing trips aren't touched.</p>
+      <div id="templateStatus"></div>
+      <div class="template-buttons">
+        <button class="template-btn" data-action="save-template">Save as template</button>
+        <button class="template-btn template-btn-clear" data-action="clear-template">Clear template</button>
+      </div>
+    </div>
+  `;
 
-  // Check toggling
+  // Render template status
+  const summary = templateSummary();
+  const statusEl = document.getElementById('templateStatus');
+  if (statusEl) {
+    if (summary && (summary.overrideCount > 0 || summary.customCount > 0)) {
+      const parts = [];
+      if (summary.overrideCount) parts.push(`${summary.overrideCount} override${summary.overrideCount===1?'':'s'}`);
+      if (summary.customCount) parts.push(`${summary.customCount} custom item${summary.customCount===1?'':'s'}`);
+      const savedDate = summary.savedAt ? new Date(summary.savedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : null;
+      statusEl.innerHTML = `<div class="template-status active">ACTIVE · ${parts.join(' · ')}${savedDate ? `<div class="meta">Saved ${escapeHtml(savedDate)}</div>` : ''}</div>`;
+    } else {
+      statusEl.innerHTML = `<div class="template-status empty">No template set</div>`;
+    }
+  }
+
+  wirePackingHandlers(trip);
+}
+
+function rerenderPacking(tripId) {
+  const t = getTrip(tripId);
+  if (!t) return;
+  const wx = wxCache[tripId] || null;
+  const newResult = buildPackingList(t, wx);
+  renderPackingList(t, newResult);
+}
+
+function wirePackingHandlers(trip) {
+  const list = document.getElementById('packingList');
+
+  // Check toggle on pack-item — ignore clicks on the edit button
   list.querySelectorAll('.pack-item').forEach(el => {
-    el.onclick = () => {
+    el.onclick = (e) => {
+      if (e.target.closest('[data-action="edit-toggle"]')) return;
       const key = el.dataset.key;
       const t = getTrip(trip.id);
       t.checked = t.checked || {};
@@ -1450,6 +1830,182 @@ function renderPackingList(trip, result) {
       el.classList.toggle('checked');
     };
   });
+
+  // Edit toggle
+  list.querySelectorAll('[data-action="edit-toggle"]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const editId = btn.dataset.editId;
+      const row = document.getElementById(editId);
+      document.querySelectorAll('.edit-row.active').forEach(r => {
+        if (r.id !== editId) r.classList.remove('active');
+      });
+      row.classList.toggle('active');
+    };
+  });
+
+  // Add-item toggle
+  list.querySelectorAll('[data-action="add-toggle"]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const addId = btn.dataset.addId;
+      const row = document.getElementById(addId);
+      document.querySelectorAll('.edit-row.active').forEach(r => {
+        if (r.id !== addId) r.classList.remove('active');
+      });
+      row.classList.toggle('active');
+    };
+  });
+
+  // Quantity steppers
+  list.querySelectorAll('.qty-stepper').forEach(stepper => {
+    stepper.querySelectorAll('button[data-step]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const step = parseInt(btn.dataset.step);
+        const valEl = stepper.querySelector('.qty-val');
+        let v = parseInt(valEl.textContent) || 0;
+        v = Math.max(0, Math.min(99, v + step));
+        valEl.textContent = v;
+      };
+    });
+  });
+
+  // Save edits on existing items
+  list.querySelectorAll('.edit-row').forEach(row => {
+    if (row.id.startsWith('add_')) return; // skip the add forms
+
+    const saveBtn = row.querySelector('[data-action="save"]');
+    if (saveBtn) saveBtn.onclick = () => {
+      const cat = row.dataset.cat;
+      const name = row.dataset.name;
+      const isCustom = row.dataset.custom === '1';
+      const customId = row.dataset.customId;
+      const newQty = parseInt(row.querySelector('.qty-val').textContent);
+      const newNote = row.querySelector('.note-edit').value.trim();
+
+      const t = getTrip(trip.id);
+      t.customizations = t.customizations || { overrides: {}, custom: [] };
+
+      if (isCustom) {
+        const ci = t.customizations.custom.find(c => c.id === customId);
+        if (ci) {
+          if (newQty === 0) {
+            t.customizations.custom = t.customizations.custom.filter(c => c.id !== customId);
+          } else {
+            ci.qty = newQty;
+            ci.note = newNote || null;
+          }
+        }
+      } else {
+        const key = `${cat}::${name}`;
+        t.customizations.overrides[key] = t.customizations.overrides[key] || {};
+        t.customizations.overrides[key].qty = newQty;
+        t.customizations.overrides[key].note = newNote || null;
+        if (newQty === 0) t.customizations.overrides[key].deleted = true;
+        else delete t.customizations.overrides[key].deleted;
+      }
+      upsertTrip(t);
+      rerenderPacking(trip.id);
+    };
+
+    const deleteBtn = row.querySelector('[data-action="delete"]');
+    if (deleteBtn) deleteBtn.onclick = () => {
+      if (!confirm('Remove this item from the list?')) return;
+      const cat = row.dataset.cat;
+      const name = row.dataset.name;
+      const isCustom = row.dataset.custom === '1';
+      const customId = row.dataset.customId;
+
+      const t = getTrip(trip.id);
+      t.customizations = t.customizations || { overrides: {}, custom: [] };
+
+      if (isCustom) {
+        t.customizations.custom = t.customizations.custom.filter(c => c.id !== customId);
+      } else {
+        const key = `${cat}::${name}`;
+        t.customizations.overrides[key] = t.customizations.overrides[key] || {};
+        t.customizations.overrides[key].deleted = true;
+      }
+      upsertTrip(t);
+      rerenderPacking(trip.id);
+    };
+
+    const cancelBtn = row.querySelector('[data-action="cancel"]');
+    if (cancelBtn) cancelBtn.onclick = () => row.classList.remove('active');
+  });
+
+  // Add new custom item
+  list.querySelectorAll('[data-action="add-save"]').forEach(btn => {
+    btn.onclick = () => {
+      const row = btn.closest('.edit-row');
+      const cat = row.dataset.cat;
+      const name = row.querySelector('.name-add').value.trim();
+      const qty = parseInt(row.querySelector('.qty-val').textContent);
+      const note = row.querySelector('.note-add').value.trim();
+
+      if (!name) { alert('Give the item a name.'); return; }
+      if (qty < 1) { alert('Quantity must be at least 1.'); return; }
+
+      const t = getTrip(trip.id);
+      t.customizations = t.customizations || { overrides: {}, custom: [] };
+      t.customizations.custom.push({
+        id: 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+        category: cat,
+        name: name,
+        qty: qty,
+        note: note || null
+      });
+      upsertTrip(t);
+      rerenderPacking(trip.id);
+    };
+  });
+
+  list.querySelectorAll('[data-action="add-cancel"]').forEach(btn => {
+    btn.onclick = () => btn.closest('.edit-row').classList.remove('active');
+  });
+
+  // Reset all customizations
+  const resetBtn = list.querySelector('[data-action="reset-customizations"]');
+  if (resetBtn) resetBtn.onclick = () => {
+    if (!confirm('Reset all customizations? This restores the default packing list and removes items you added. Checkmarks are preserved.')) return;
+    const t = getTrip(trip.id);
+    t.customizations = { overrides: {}, custom: [] };
+    upsertTrip(t);
+    rerenderPacking(trip.id);
+  };
+
+  // Template: save current trip's customizations as the default template
+  const saveTemplateBtn = list.querySelector('[data-action="save-template"]');
+  if (saveTemplateBtn) saveTemplateBtn.onclick = () => {
+    const t = getTrip(trip.id);
+    const c = t.customizations || { overrides: {}, custom: [] };
+    const overrideCount = Object.keys(c.overrides || {}).length;
+    const customCount = (c.custom || []).length;
+    if (overrideCount === 0 && customCount === 0) {
+      alert('No customizations on this trip yet. Edit, delete, or add items first — then save as template.');
+      return;
+    }
+    const existing = loadTemplate();
+    const msg = existing
+      ? `Replace existing template with this trip's customizations (${overrideCount} override${overrideCount===1?'':'s'} + ${customCount} custom item${customCount===1?'':'s'})? Future new trips will start with these instead. Existing trips are unaffected.`
+      : `Save this trip's customizations as your default template (${overrideCount} override${overrideCount===1?'':'s'} + ${customCount} custom item${customCount===1?'':'s'})? Every new trip you create after this will start with these applied. Existing trips are unaffected.`;
+    if (!confirm(msg)) return;
+    saveTemplate(c);
+    rerenderPacking(trip.id);
+  };
+
+  // Template: clear the default template
+  const clearTemplateBtn = list.querySelector('[data-action="clear-template"]');
+  if (clearTemplateBtn) clearTemplateBtn.onclick = () => {
+    if (!loadTemplate()) {
+      alert('No template to clear.');
+      return;
+    }
+    if (!confirm('Clear the default template? New trips will start from scratch with no customizations. Existing trips are unaffected.')) return;
+    clearTemplateStorage();
+    rerenderPacking(trip.id);
+  };
 }
 
 // ---------- Flights / Hotels / Ground launchers ----------
