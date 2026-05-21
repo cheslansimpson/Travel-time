@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1B1F23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Travel Time">
+<title>Travel Time</title>
+
+<!-- Inline SVG icon as data URI for both manifest and home-screen install -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%231B1F23'/><path d='M128 256 L384 128 L320 256 L384 384 Z' fill='%23B8451F'/><circle cx='256' cy='256' r='12' fill='%23F4EFE6'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%231B1F23'/><path d='M128 256 L384 128 L320 256 L384 384 Z' fill='%23B8451F'/><circle cx='256' cy='256' r='12' fill='%23F4EFE6'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F4EFE6;
+  --surface: #FBF8F2;
+  --surface-2: #EDE5D5;
+  --ink: #1B1F23;
+  --ink-2: #5C5650;
+  --ink-3: #8A8278;
+  --accent: #B8451F;
+  --accent-soft: #E8D5C4;
+  --border: #D9D1C2;
+  --border-strong: #B8AE9A;
+  --cold: #2C5F5D;
+  --rain: #4A6B8A;
+  --warn: #B8451F;
+  --shadow: 0 1px 0 rgba(27,31,35,0.04), 0 8px 24px rgba(27,31,35,0.06);
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Manrope', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior-y: contain;
+}
+
+#app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 96px;
+}
+
+/* ============ HEADER ============ */
+.app-header {
+  padding: 24px 20px 16px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.app-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 48;
+  line-height: 1;
+}
+.app-title em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent);
+}
+.app-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+
+.back-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink-2); padding: 8px 0;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.back-btn:before { content: "← "; color: var(--accent); }
+
+/* ============ VIEWS ============ */
+.view { display: none; padding: 20px; }
+.view.active { display: block; animation: fadeIn 0.25s ease-out; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ HOME / TRIP LIST ============ */
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  margin-top: 24px;
+}
+.empty-state h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 24px;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.empty-state p { color: var(--ink-2); font-size: 14px; max-width: 320px; margin: 0 auto; }
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  margin: 28px 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label:before {
+  content: ""; height: 1px; flex: 0 0 18px; background: var(--accent);
+}
+
+.trip-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.trip-card:active { transform: scale(0.99); }
+.trip-card:hover { box-shadow: var(--shadow); }
+.trip-card .tag-row {
+  display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.tag.business { background: var(--ink); color: var(--bg); }
+.tag.leisure { background: var(--accent); color: white; }
+.tag.personal { background: var(--cold); color: white; }
+.trip-card h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.trip-card .meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.trip-card .meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-3); }
+.trip-card.past { opacity: 0.6; }
+.trip-card.past:after {
+  content: "ARCHIVED";
+  position: absolute; top: 12px; right: 12px;
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.15em; color: var(--ink-3);
+}
+
+/* ============ FAB ============ */
+.fab {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  right: 20px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 999px;
+  padding: 16px 22px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 20px rgba(27,31,35,0.25);
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fab .plus { font-size: 20px; line-height: 1; color: var(--accent); font-weight: 400; }
+.fab:active { transform: scale(0.96); }
+@media (min-width: 540px) {
+  .fab { right: calc(50% - 240px); }
+}
+
+/* ============ FORM ============ */
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.form-group input, .form-group textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.form-group textarea { resize: vertical; min-height: 64px; }
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.chip {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip.active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.chip:active { transform: scale(0.96); }
+
+.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.primary-btn {
+  width: 100%;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius);
+  padding: 16px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  margin-top: 12px;
+}
+.primary-btn:active { transform: scale(0.99); }
+.primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.danger-btn {
+  background: none;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 24px;
+}
+
+/* ============ DETAIL VIEW ============ */
+.detail-hero {
+  padding: 8px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.detail-hero .tag-row { margin-bottom: 12px; }
+.detail-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 36px;
+  letter-spacing: -0.025em;
+  font-variation-settings: "opsz" 96;
+  line-height: 1.05;
+  margin-bottom: 10px;
+}
+.detail-hero .destination-sub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  letter-spacing: 0.04em;
+}
+.detail-hero .duration-bar {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.duration-stat { flex: 1; }
+.duration-stat .num {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+}
+.duration-stat .lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ============ WEATHER ============ */
+.weather-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 20px;
+}
+.weather-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.temp-range {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.temp-range .sep { color: var(--ink-3); font-weight: 400; }
+.temp-range .lo { color: var(--cold); }
+.weather-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.weather-notes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.weather-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.weather-pill.cold { background: var(--cold); color: white; }
+.weather-pill.rain { background: var(--rain); color: white; }
+.weather-pill.hot { background: var(--accent); color: white; }
+.weather-pill.warn { background: var(--ink); color: var(--bg); }
+
+.weather-loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ============ PACKING LIST ============ */
+.pack-category {
+  margin-bottom: 22px;
+}
+.pack-category-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.pack-category-head h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.pack-category-head .count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+}
+.pack-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.pack-item:last-child { border-bottom: none; }
+.pack-item .check {
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  transition: all 0.15s;
+}
+.pack-item.checked .check {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.pack-item.checked .check:after {
+  content: "✓";
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 700;
+}
+.pack-item .item-name {
+  flex: 1;
+  font-size: 15px;
+  color: var(--ink);
+}
+.pack-item.checked .item-name {
+  text-decoration: line-through;
+  color: var(--ink-3);
+}
+.pack-item .qty {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.pack-item.checked .qty { color: var(--ink-3); }
+.pack-item .note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.05em;
+  font-style: italic;
+  margin-left: 6px;
+}
+
+.pack-warn {
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.pack-warn .marker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  font-weight: 600;
+}
+.pack-warn .body { flex: 1; line-height: 1.4; }
+.pack-warn .body strong { font-family: var(--font-display); font-weight: 600; display: block; margin-bottom: 4px; }
+
+/* ============ LAUNCHERS ============ */
+.launcher-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.launcher {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.launcher:active { transform: scale(0.98); }
+.launcher:hover {
+  border-color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.launcher .lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.launcher .name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.launcher .hint {
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.3;
+}
+.launcher .gov-flag {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: var(--accent);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.launcher.full-width { grid-column: span 2; }
+
+/* ============ SAVED CONFIRMATIONS ============ */
+.saved-entry {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.saved-entry .badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.saved-entry .val {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  word-break: break-all;
+}
+.saved-entry .edit {
+  background: none; border: none; cursor: pointer;
+  color: var(--accent); font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.save-confirm-input {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.save-confirm-input input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.save-confirm-input button {
+  background: var(--ink); color: var(--bg);
+  border: none; border-radius: var(--radius-sm);
+  padding: 0 16px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+/* ============ DATALIST / AUTOCOMPLETE ============ */
+.geo-results {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: -6px;
+}
+.geo-results .geo-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.geo-results .geo-item:last-child { border-bottom: none; }
+.geo-results .geo-item:hover { background: var(--surface-2); }
+.geo-results .geo-item .country {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-left: 6px;
+}
+
+/* ============ FOOTER ============ */
+.footer-note {
+  text-align: center;
+  padding: 32px 20px 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.footer-note em {
+  color: var(--accent);
+  font-style: normal;
+}
+
+.install-hint {
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--ink);
+  margin-top: 20px;
+  display: none;
+}
+.install-hint.show { display: block; }
+.install-hint strong {
+  font-family: var(--font-display);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+.install-hint .close-hint {
+  float: right; background: none; border: none;
+  font-size: 16px; cursor: pointer; color: var(--ink-2);
+}
+
+/* ============ MISC ============ */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 24px 0;
+}
+
+.helper-text {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-top: 6px;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="app-header">
+    <div>
+      <div class="app-title">Travel <em>Time</em></div>
+      <div class="app-sub">Packing · Booking · Logistics</div>
+    </div>
+    <button id="backBtn" class="back-btn" style="display:none">Back</button>
+  </header>
+
+  <!-- HOME VIEW -->
+  <section id="view-home" class="view active">
+    <div id="installHint" class="install-hint">
+      <button class="close-hint" onclick="dismissInstallHint()">×</button>
+      <strong>Install Travel Time</strong>
+      On iOS: tap Share → Add to Home Screen. On Android: tap menu → Install app.
+    </div>
+
+    <div id="tripList"></div>
+    <div id="emptyState" class="empty-state" style="display:none">
+      <h2>No trips yet</h2>
+      <p>Tap <strong>+ New Trip</strong> to build a weather-aware packing list and book the rest.</p>
+    </div>
+
+    <div class="footer-note">
+      Travel Time · Built for <em>PSC</em> · Carry-on doctrine
+    </div>
+  </section>
+
+  <!-- FORM VIEW -->
+  <section id="view-form" class="view">
+    <h2 style="font-family:var(--font-display);font-weight:600;font-size:28px;letter-spacing:-0.02em;margin-bottom:8px">
+      <span id="formTitle">New Trip</span>
+    </h2>
+    <p style="color:var(--ink-2);margin-bottom:24px;font-size:14px">
+      Destination drives weather. Trip type drives packing.
+    </p>
+
+    <div class="form-group">
+      <label>Destination city</label>
+      <input type="text" id="destInput" placeholder="e.g. Atlanta, GA or Tokyo, Japan" autocomplete="off">
+      <div id="geoResults" class="geo-results" style="display:none"></div>
+      <div class="helper-text">Type to search. Coordinates determine weather.</div>
+    </div>
+
+    <div class="form-group">
+      <label>Trip type (select all that apply)</label>
+      <div class="chips" id="tripTypeChips">
+        <button class="chip" data-type="business">Company business</button>
+        <button class="chip" data-type="personal">Personal business</button>
+        <button class="chip" data-type="leisure">Leisure</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Dates</label>
+      <div class="date-row">
+        <input type="date" id="startDate">
+        <input type="date" id="endDate">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <textarea id="notesInput" placeholder="Meeting locations, restaurants, anything to remember"></textarea>
+    </div>
+
+    <button class="primary-btn" id="saveTripBtn">Save Trip</button>
+    <button class="danger-btn" id="deleteTripBtn" style="display:none">Delete this trip</button>
+  </section>
+
+  <!-- DETAIL VIEW -->
+  <section id="view-detail" class="view">
+    <div class="detail-hero" id="detailHero"></div>
+
+    <div class="section-label">Weather forecast</div>
+    <div id="weatherBlock"></div>
+
+    <div id="packWarnBlock"></div>
+
+    <div class="section-label">Packing list</div>
+    <div id="packingList"></div>
+
+    <div class="section-label">Flights · Delta</div>
+    <div id="flightBlock"></div>
+
+    <div class="section-label">Hotels</div>
+    <div id="hotelBlock"></div>
+
+    <div class="section-label">Ground transport</div>
+    <div id="groundBlock"></div>
+
+    <div class="section-label">Saved confirmations</div>
+    <div id="savedBlock"></div>
+
+    <button class="primary-btn" id="editTripBtn" style="margin-top:32px">Edit trip details</button>
+  </section>
+
+  <button id="fabBtn" class="fab"><span class="plus">+</span> New Trip</button>
+</div>
+
+<script>
+/* ============================================================
+   TRAVEL TIME — Single-file PWA
+   Profile baked in based on interview:
+   - 1 outfit/day, no workout, undies/socks 1/day + 2 buffer
+   - Carry-on only always
+   - Fed contractor → government rate codes
+   - Marriott Bonvoy + Hilton Honors + Delta SkyMiles
+   - Home airport: PSC
+   - Laptop + noise-canceling headphones always
+   - Laundry mid-trip on trips ≥ 5 days
+   ============================================================ */
+
+const PROFILE = {
+  homeAirport: 'PSC',
+  carryOnOnly: true,
+  govRateEligible: true,
+  laundryThresholdDays: 5,
+  undiesBuffer: 2,
+  socksBuffer: 2,
+  outfitsPerDay: 1,
+  workout: false,
+  tech: ['Laptop', 'Noise-canceling headphones'],
+  loyalty: ['Marriott Bonvoy', 'Hilton Honors', 'Delta SkyMiles']
+};
+
+const STORAGE_KEY = 'travelTime_v1';
+const STATE_KEY = 'travelTime_state';
+
+// ---------- Storage ----------
+function loadTrips() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function saveTrips(trips) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
+}
+function getTrip(id) {
+  return loadTrips().find(t => t.id === id);
+}
+function upsertTrip(trip) {
+  const trips = loadTrips();
+  const idx = trips.findIndex(t => t.id === trip.id);
+  if (idx >= 0) trips[idx] = trip;
+  else trips.unshift(trip);
+  saveTrips(trips);
+}
+function deleteTrip(id) {
+  saveTrips(loadTrips().filter(t => t.id !== id));
+}
+function uid() { return 'trip_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+// ---------- View routing ----------
+let currentView = 'home';
+let editingTripId = null;
+let viewingTripId = null;
+
+function showView(name, opts={}) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  currentView = name;
+  document.getElementById('backBtn').style.display = name === 'home' ? 'none' : 'block';
+  document.getElementById('fabBtn').style.display = name === 'home' ? 'flex' : 'none';
+  window.scrollTo(0,0);
+  if (name === 'home') renderHome();
+  if (name === 'form') renderForm(opts.tripId);
+  if (name === 'detail') renderDetail(opts.tripId);
+}
+
+document.getElementById('backBtn').onclick = () => {
+  if (currentView === 'detail') showView('home');
+  else if (currentView === 'form' && editingTripId) showView('detail', { tripId: editingTripId });
+  else showView('home');
+};
+
+document.getElementById('fabBtn').onclick = () => {
+  editingTripId = null;
+  showView('form');
+};
+
+// ---------- Home render ----------
+function renderHome() {
+  const trips = loadTrips();
+  const today = new Date().toISOString().slice(0,10);
+  trips.sort((a,b) => a.startDate.localeCompare(b.startDate));
+  const upcoming = trips.filter(t => t.endDate >= today);
+  const past = trips.filter(t => t.endDate < today).reverse();
+
+  const list = document.getElementById('tripList');
+  list.innerHTML = '';
+
+  if (trips.length === 0) {
+    document.getElementById('emptyState').style.display = 'block';
+  } else {
+    document.getElementById('emptyState').style.display = 'none';
+  }
+
+  if (upcoming.length) {
+    list.innerHTML += `<div class="section-label">Upcoming</div>`;
+    upcoming.forEach(t => list.appendChild(tripCard(t)));
+  }
+  if (past.length) {
+    list.innerHTML += `<div class="section-label">Past</div>`;
+    past.forEach(t => list.appendChild(tripCard(t, true)));
+  }
+}
+
+function tripCard(t, isPast=false) {
+  const div = document.createElement('div');
+  div.className = 'trip-card' + (isPast ? ' past' : '');
+  const tags = (t.types || []).map(ty => `<span class="tag ${ty}">${ty}</span>`).join('');
+  const days = daysBetween(t.startDate, t.endDate) + 1;
+  div.innerHTML = `
+    <div class="tag-row">${tags}</div>
+    <h3>${escapeHtml(t.destLabel || t.destination)}</h3>
+    <div class="meta">
+      <span>${fmtDate(t.startDate)} → ${fmtDate(t.endDate)}</span>
+      <span class="dot"></span>
+      <span>${days} day${days===1?'':'s'}</span>
+    </div>
+  `;
+  div.onclick = () => showView('detail', { tripId: t.id });
+  return div;
+}
+
+// ---------- Form ----------
+let formState = { destination: '', destLabel: '', lat: null, lon: null, country: '', types: [], start: '', end: '', notes: '' };
+
+function renderForm(tripId) {
+  editingTripId = tripId || null;
+  const isEdit = !!tripId;
+  document.getElementById('formTitle').textContent = isEdit ? 'Edit Trip' : 'New Trip';
+  document.getElementById('deleteTripBtn').style.display = isEdit ? 'block' : 'none';
+
+  if (isEdit) {
+    const t = getTrip(tripId);
+    formState = {
+      destination: t.destination, destLabel: t.destLabel, lat: t.lat, lon: t.lon, country: t.country || '',
+      types: [...(t.types || [])], start: t.startDate, end: t.endDate, notes: t.notes || ''
+    };
+  } else {
+    formState = { destination: '', destLabel: '', lat: null, lon: null, country: '', types: [], start: '', end: '', notes: '' };
+  }
+
+  document.getElementById('destInput').value = formState.destLabel || formState.destination;
+  document.getElementById('startDate').value = formState.start;
+  document.getElementById('endDate').value = formState.end;
+  document.getElementById('notesInput').value = formState.notes;
+  document.querySelectorAll('#tripTypeChips .chip').forEach(c => {
+    c.classList.toggle('active', formState.types.includes(c.dataset.type));
+  });
+  document.getElementById('geoResults').style.display = 'none';
+}
+
+document.querySelectorAll('#tripTypeChips .chip').forEach(c => {
+  c.onclick = () => {
+    const t = c.dataset.type;
+    if (formState.types.includes(t)) formState.types = formState.types.filter(x => x !== t);
+    else formState.types.push(t);
+    c.classList.toggle('active');
+  };
+});
+
+// Geocoding (Open-Meteo)
+let geoTimer = null;
+document.getElementById('destInput').oninput = (e) => {
+  const q = e.target.value.trim();
+  formState.destination = q;
+  formState.destLabel = q; // tentative until selection
+  if (geoTimer) clearTimeout(geoTimer);
+  if (q.length < 2) {
+    document.getElementById('geoResults').style.display = 'none';
+    return;
+  }
+  geoTimer = setTimeout(() => searchGeo(q), 280);
+};
+
+async function searchGeo(q) {
+  const box = document.getElementById('geoResults');
+  try {
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (!data.results || data.results.length === 0) {
+      box.innerHTML = `<div class="geo-item" style="cursor:default;color:var(--ink-3);font-style:italic">No matches. Try another spelling or add country.</div>`;
+      box.style.display = 'block';
+      return;
+    }
+    box.innerHTML = data.results.map(g => {
+      const label = `${g.name}${g.admin1 ? ', ' + g.admin1 : ''}`;
+      return `<div class="geo-item" data-lat="${g.latitude}" data-lon="${g.longitude}" data-label="${escapeHtml(label)}" data-country="${escapeHtml(g.country || '')}">${escapeHtml(label)}<span class="country">${escapeHtml(g.country || '')}</span></div>`;
+    }).join('');
+    box.style.display = 'block';
+    box.querySelectorAll('.geo-item').forEach(item => {
+      item.onclick = () => {
+        formState.lat = parseFloat(item.dataset.lat);
+        formState.lon = parseFloat(item.dataset.lon);
+        formState.destLabel = item.dataset.label;
+        formState.country = item.dataset.country;
+        formState.destination = item.dataset.label;
+        document.getElementById('destInput').value = item.dataset.label;
+        box.style.display = 'none';
+      };
+    });
+  } catch(e) {
+    console.error('Geo error', e);
+    const isFile = window.location.protocol === 'file:';
+    box.innerHTML = `<div class="geo-item" style="cursor:default;color:var(--ink);font-size:13px;line-height:1.5;padding:14px;background:var(--accent-soft);border-left:3px solid var(--accent)">
+      <strong style="font-family:var(--font-display);font-size:14px;display:block;margin-bottom:6px;color:var(--accent)">Can't reach destination service</strong>
+      ${isFile
+        ? 'This file is open as a local file (<code style="font-family:var(--font-mono);font-size:11px;background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">file://</code>). Mobile browsers block network calls from local files. Host it (instructions on the home screen) and the search will work.'
+        : 'Check your connection and retry. If it persists, Open-Meteo may be temporarily down.'}
+    </div>`;
+    box.style.display = 'block';
+  }
+}
+
+document.getElementById('startDate').onchange = (e) => { formState.start = e.target.value; };
+document.getElementById('endDate').onchange = (e) => { formState.end = e.target.value; };
+document.getElementById('notesInput').oninput = (e) => { formState.notes = e.target.value; };
+
+document.getElementById('saveTripBtn').onclick = () => {
+  if (!formState.destLabel) { alert('Pick a destination from the dropdown.'); return; }
+  if (!formState.lat) { alert('Pick a destination from the dropdown so we have coordinates.'); return; }
+  if (!formState.start || !formState.end) { alert('Set both start and end dates.'); return; }
+  if (formState.end < formState.start) { alert('End date must be on or after start date.'); return; }
+  if (formState.types.length === 0) { alert('Pick at least one trip type.'); return; }
+
+  const trip = {
+    id: editingTripId || uid(),
+    destination: formState.destination,
+    destLabel: formState.destLabel,
+    lat: formState.lat,
+    lon: formState.lon,
+    country: formState.country,
+    types: formState.types,
+    startDate: formState.start,
+    endDate: formState.end,
+    notes: formState.notes,
+    saved: editingTripId ? (getTrip(editingTripId).saved || {}) : {},
+    checked: editingTripId ? (getTrip(editingTripId).checked || {}) : {}
+  };
+  upsertTrip(trip);
+  showView('detail', { tripId: trip.id });
+};
+
+document.getElementById('deleteTripBtn').onclick = () => {
+  if (!editingTripId) return;
+  if (!confirm('Delete this trip permanently?')) return;
+  deleteTrip(editingTripId);
+  editingTripId = null;
+  showView('home');
+};
+
+// ---------- Detail ----------
+async function renderDetail(tripId) {
+  viewingTripId = tripId;
+  const trip = getTrip(tripId);
+  if (!trip) { showView('home'); return; }
+
+  // Hero
+  const days = daysBetween(trip.startDate, trip.endDate) + 1;
+  const tags = trip.types.map(t => `<span class="tag ${t}">${t}</span>`).join('');
+  document.getElementById('detailHero').innerHTML = `
+    <div class="tag-row">${tags}</div>
+    <h1>${escapeHtml(trip.destLabel)}</h1>
+    <div class="destination-sub">${fmtDate(trip.startDate)} → ${fmtDate(trip.endDate)}${trip.country ? ' · ' + escapeHtml(trip.country) : ''}</div>
+    <div class="duration-bar">
+      <div class="duration-stat"><div class="num">${days}</div><div class="lbl">Days</div></div>
+      <div class="duration-stat"><div class="num">${nightsBetween(trip.startDate, trip.endDate)}</div><div class="lbl">Nights</div></div>
+      <div class="duration-stat"><div class="num">${trip.types.length}</div><div class="lbl">Modes</div></div>
+    </div>
+  `;
+
+  // Weather (async)
+  document.getElementById('weatherBlock').innerHTML = `<div class="weather-loading">Fetching forecast…</div>`;
+  const wx = await fetchWeather(trip.lat, trip.lon, trip.startDate, trip.endDate);
+  renderWeather(wx);
+
+  // Packing list
+  const packResult = buildPackingList(trip, wx);
+  renderPackingList(trip, packResult);
+
+  // Launchers
+  renderFlights(trip);
+  renderHotels(trip);
+  renderGround(trip);
+
+  // Saved confirmations
+  renderSaved(trip);
+}
+
+// ---------- Weather ----------
+async function fetchWeather(lat, lon, startDate, endDate) {
+  const today = new Date().toISOString().slice(0,10);
+  const daysOut = daysBetween(today, startDate);
+  const tripLen = daysBetween(startDate, endDate) + 1;
+
+  // Open-Meteo forecast window is 16 days
+  const useForcast = daysOut <= 16 && (daysOut + tripLen) <= 16;
+  let url, mode;
+  if (useForcast) {
+    url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weather_code&temperature_unit=fahrenheit&timezone=auto&start_date=${startDate}&end_date=${endDate}`;
+    mode = 'forecast';
+  } else {
+    // Climate normal: use historical archive for same dates last year as a proxy
+    const lastYear = (new Date(startDate).getFullYear() - 1);
+    const sd = lastYear + startDate.slice(4);
+    const ed = lastYear + endDate.slice(4);
+    url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&timezone=auto&start_date=${sd}&end_date=${ed}`;
+    mode = 'historical';
+  }
+
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    if (!d.daily) throw new Error('No data');
+    const highs = d.daily.temperature_2m_max || [];
+    const lows = d.daily.temperature_2m_min || [];
+    const precipProb = d.daily.precipitation_probability_max || [];
+    const precipSum = d.daily.precipitation_sum || [];
+    const avgHigh = avg(highs);
+    const avgLow = avg(lows);
+    const maxHigh = Math.max(...highs);
+    const minLow = Math.min(...lows);
+    const maxPrecipProb = precipProb.length ? Math.max(...precipProb) : 0;
+    const rainyDays = mode === 'forecast'
+      ? precipProb.filter(p => p >= 50).length
+      : precipSum.filter(p => p >= 2.5).length; // 2.5mm threshold for historical
+    return {
+      mode, avgHigh, avgLow, maxHigh, minLow, maxPrecipProb, rainyDays,
+      days: highs.length
+    };
+  } catch(e) {
+    console.error('Weather fetch failed', e);
+    return { mode: 'error', error: true };
+  }
+}
+
+function renderWeather(wx) {
+  const box = document.getElementById('weatherBlock');
+  if (wx.error) {
+    const isFile = window.location.protocol === 'file:';
+    box.innerHTML = `<div class="weather-card" style="border-color:var(--accent);background:var(--accent-soft)">
+      <div class="weather-label" style="color:var(--accent)">Forecast unavailable</div>
+      <p style="margin-top:8px;font-size:13px;color:var(--ink);line-height:1.5">
+        ${isFile
+          ? 'This file is open locally — mobile browsers block weather API calls from <code style="font-family:var(--font-mono);font-size:11px;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px">file://</code>. Host the file (see home screen) and weather will load. Packing list below is using temperate defaults.'
+          : 'Check your connection and reopen this trip. Packing list below uses temperate defaults.'}
+      </p>
+    </div>`;
+    return;
+  }
+  const pills = [];
+  if (wx.avgLow < 50) pills.push('<span class="weather-pill cold">COLD LAYERS</span>');
+  if (wx.avgLow < 32) pills.push('<span class="weather-pill cold">FREEZING</span>');
+  if (wx.maxPrecipProb >= 50 || wx.rainyDays > 0) pills.push(`<span class="weather-pill rain">RAIN · ${wx.rainyDays} day${wx.rainyDays===1?'':'s'}</span>`);
+  if (wx.avgHigh > 80) pills.push('<span class="weather-pill hot">HOT</span>');
+  if (wx.mode === 'historical') pills.push('<span class="weather-pill warn">CLIMATE EST · &gt;16 DAYS OUT</span>');
+
+  box.innerHTML = `
+    <div class="weather-card">
+      <div class="weather-summary">
+        <div class="temp-range">${Math.round(wx.avgHigh)}°<span class="sep"> / </span><span class="lo">${Math.round(wx.avgLow)}°</span></div>
+        <div class="weather-label">Avg high / low · ${wx.days} day${wx.days===1?'':'s'}</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-2)">
+        Range: ${Math.round(wx.minLow)}° to ${Math.round(wx.maxHigh)}° · Max rain prob ${Math.round(wx.maxPrecipProb)}%
+      </div>
+      <div class="weather-notes">${pills.join('')}</div>
+    </div>
+  `;
+}
+
+// ---------- Packing logic ----------
+function buildPackingList(trip, wx) {
+  const days = daysBetween(trip.startDate, trip.endDate) + 1;
+  const types = trip.types;
+  const isBusiness = types.includes('business');
+  const isLeisure = types.includes('leisure');
+  const isPersonal = types.includes('personal');
+  const isCombo = types.length > 1;
+
+  // If trip ≥ laundry threshold, cap clothing at threshold + 1 day buffer
+  const clothingDays = days >= PROFILE.laundryThresholdDays
+    ? Math.min(days, PROFILE.laundryThresholdDays + 1)
+    : days;
+
+  const cap = (n) => Math.min(n, 7); // hard cap for carry-on sanity
+  const undies = cap(clothingDays + PROFILE.undiesBuffer);
+  const socks = cap(clothingDays + PROFILE.socksBuffer);
+  const undershirts = cap(clothingDays + 1);
+
+  // Weather flags (defaults if no wx)
+  const avgHigh = wx && !wx.error ? wx.avgHigh : 70;
+  const avgLow = wx && !wx.error ? wx.avgLow : 55;
+  const minLow = wx && !wx.error ? wx.minLow : 55;
+  const rainyDays = wx && !wx.error ? wx.rainyDays : 0;
+  const maxPrecip = wx && !wx.error ? wx.maxPrecipProb : 0;
+  const cold = avgLow < 50;
+  const freezing = avgLow < 32;
+  const arctic = minLow < 20;
+  const hot = avgHigh > 80;
+  const veryHot = avgHigh > 90;
+  const rainExpected = rainyDays > 0 || maxPrecip >= 50;
+  const snowLikely = freezing && rainExpected;
+
+  const cats = [];
+
+  // Base layer
+  cats.push({
+    name: 'Base layer',
+    items: [
+      { name: 'Underwear', qty: undies, note: `${clothingDays}d + ${PROFILE.undiesBuffer} buffer` },
+      { name: 'Socks', qty: socks, note: cold ? 'incl. 1-2 wool pairs' : null },
+      { name: 'Undershirts / T-shirts', qty: undershirts, note: null }
+    ]
+  });
+
+  // Tops
+  const tops = [];
+  if (isBusiness) {
+    const shirts = cap(clothingDays);
+    tops.push({ name: 'Dress shirts', qty: shirts, note: 'pressable cotton blend' });
+    tops.push({ name: 'Blazer / sport coat', qty: 1, note: 'wear on plane' });
+  }
+  if (isLeisure || isPersonal) {
+    const polos = isBusiness ? 2 : cap(Math.ceil(clothingDays * 0.7));
+    tops.push({ name: 'Polos / casual shirts', qty: polos, note: 'rewearable' });
+  }
+  if (!isBusiness && (isLeisure || isPersonal)) {
+    tops.push({ name: 'Long-sleeve shirt', qty: cold ? 2 : 1, note: cold ? 'layering' : null });
+  }
+  cats.push({ name: 'Tops', items: tops });
+
+  // Bottoms
+  const bottoms = [];
+  if (isBusiness) {
+    bottoms.push({ name: 'Dress pants / slacks', qty: 2, note: 'dark colors, rewearable' });
+  }
+  if (isLeisure || isPersonal) {
+    if (veryHot) bottoms.push({ name: 'Shorts', qty: 2, note: 'quick-dry' });
+    else bottoms.push({ name: 'Jeans or chinos', qty: isBusiness ? 1 : 2, note: 'rewearable' });
+  }
+  if (cold && !isBusiness) {
+    bottoms.push({ name: 'Wool or fleece pants', qty: 1, note: 'cold weather' });
+  }
+  cats.push({ name: 'Bottoms', items: bottoms });
+
+  // Outerwear (weather-driven)
+  const outer = [];
+  if (rainExpected) outer.push({ name: 'Packable rain shell', qty: 1, note: `${rainyDays || '1+'} rainy day(s)` });
+  if (cold && !freezing) outer.push({ name: 'Light insulated jacket', qty: 1, note: null });
+  if (freezing) {
+    outer.push({ name: 'Heavy winter coat', qty: 1, note: 'wear on plane' });
+    outer.push({ name: 'Beanie / wool hat', qty: 1, note: null });
+    outer.push({ name: 'Gloves', qty: 1, note: 'pair' });
+    outer.push({ name: 'Scarf', qty: 1, note: null });
+  }
+  if (arctic) outer.push({ name: 'Thermal long underwear', qty: 1, note: 'merino preferred' });
+  if (snowLikely) outer.push({ name: 'Waterproof boots', qty: 1, note: 'wear on plane' });
+  if (hot) outer.push({ name: 'Sunglasses', qty: 1, note: null });
+  if (veryHot) outer.push({ name: 'Sun hat / cap', qty: 1, note: null });
+  if (outer.length) cats.push({ name: 'Outerwear & weather', items: outer });
+
+  // Footwear
+  const feet = [];
+  if (isBusiness) {
+    feet.push({ name: 'Dress shoes', qty: 1, note: 'wear on plane' });
+    if (isLeisure || isPersonal) feet.push({ name: 'Casual sneakers', qty: 1, note: 'pack' });
+  } else {
+    feet.push({ name: 'Comfortable walking shoes', qty: 1, note: 'wear on plane' });
+    feet.push({ name: 'Alternate casual shoes', qty: 1, note: null });
+  }
+  if (!snowLikely && !veryHot) {
+    // Sandals only for warm leisure
+    if ((isLeisure || isPersonal) && avgHigh > 70) {
+      feet.push({ name: 'Sandals or flip-flops', qty: 1, note: null });
+    }
+  }
+  cats.push({ name: 'Footwear', items: feet });
+
+  // Tech (profile-driven)
+  const tech = [
+    { name: 'Laptop', qty: 1, note: null },
+    { name: 'Laptop charger', qty: 1, note: null },
+    { name: 'Phone charger + cable', qty: 1, note: null },
+    { name: 'Noise-canceling headphones', qty: 1, note: null },
+    { name: 'Headphone cable / charger', qty: 1, note: null },
+    { name: 'Power bank', qty: 1, note: 'TSA: in carry-on only' }
+  ];
+  if (trip.country && !isUSCountry(trip.country)) {
+    tech.push({ name: 'Universal power adapter', qty: 1, note: 'verify plug type' });
+  }
+  cats.push({ name: 'Tech', items: tech });
+
+  // Toiletries — TSA-compliant for carry-on
+  const toil = [
+    { name: 'Toothbrush + toothpaste (travel)', qty: 1, note: '<3.4oz' },
+    { name: 'Deodorant', qty: 1, note: 'solid preferred' },
+    { name: 'Razor + travel shave cream', qty: 1, note: '<3.4oz' },
+    { name: 'Shampoo / body wash (travel)', qty: 1, note: '<3.4oz · or use hotel' },
+    { name: 'Prescription meds', qty: 1, note: 'original bottles' },
+    { name: 'Pain reliever (travel pack)', qty: 1, note: null },
+    { name: 'Quart-size liquids bag', qty: 1, note: 'TSA carry-on' }
+  ];
+  if (hot) toil.push({ name: 'Sunscreen (travel)', qty: 1, note: '<3.4oz' });
+  cats.push({ name: 'Toiletries', items: toil });
+
+  // Documents & essentials
+  const docs = [
+    { name: 'ID / Driver license', qty: 1, note: null },
+    { name: 'Credit card(s) + small cash', qty: 1, note: null },
+    { name: 'Insurance card', qty: 1, note: 'wallet' },
+    { name: 'Boarding pass', qty: 1, note: 'Delta app' },
+    { name: 'Hotel confirmation', qty: 1, note: 'screenshot' }
+  ];
+  if (trip.country && !isUSCountry(trip.country)) {
+    docs.unshift({ name: 'Passport', qty: 1, note: 'check 6mo validity' });
+    docs.push({ name: 'Travel insurance docs', qty: 1, note: null });
+  }
+  if (isBusiness) {
+    docs.push({ name: 'Business cards', qty: 1, note: 'small stack' });
+    docs.push({ name: 'Notebook + pen', qty: 1, note: null });
+  }
+  cats.push({ name: 'Documents', items: docs });
+
+  // Build warnings
+  const warnings = [];
+  if (days >= PROFILE.laundryThresholdDays) {
+    warnings.push({
+      title: 'Plan a laundry day',
+      body: `Trip is ${days} days. Clothing capped at ${clothingDays} days — hit hotel laundry or a laundromat around day ${Math.floor(days/2)}.`
+    });
+  }
+  // Carry-on volume estimate
+  const volEstimate = estimateVolume(cats);
+  if (volEstimate > 38) {
+    warnings.push({
+      title: 'Carry-on tight',
+      body: `Estimated load is ~${volEstimate}L vs. ~40L typical carry-on. Consider compression cubes or wear bulkier items on the plane.`
+    });
+  }
+  if (freezing && PROFILE.carryOnOnly) {
+    warnings.push({
+      title: 'Cold-weather carry-on note',
+      body: 'Winter coat + boots eat carry-on volume. Wear both on the plane — that\'s already accounted for.'
+    });
+  }
+
+  return { cats, warnings, days, clothingDays };
+}
+
+function estimateVolume(cats) {
+  const sizes = {
+    'Underwear': 0.2, 'Socks': 0.2, 'Undershirts / T-shirts': 0.4,
+    'Dress shirts': 0.6, 'Polos / casual shirts': 0.5, 'Long-sleeve shirt': 0.6,
+    'Blazer / sport coat': 3.5,
+    'Dress pants / slacks': 0.9, 'Jeans or chinos': 1.0, 'Shorts': 0.4, 'Wool or fleece pants': 1.2,
+    'Packable rain shell': 1.0, 'Light insulated jacket': 2.5, 'Heavy winter coat': 6,
+    'Beanie / wool hat': 0.3, 'Gloves': 0.3, 'Scarf': 0.5, 'Thermal long underwear': 0.8,
+    'Waterproof boots': 4, 'Dress shoes': 3, 'Casual sneakers': 3, 'Comfortable walking shoes': 3,
+    'Alternate casual shoes': 2.5, 'Sandals or flip-flops': 0.8, 'Sunglasses': 0.2, 'Sun hat / cap': 0.6,
+    'Laptop': 2, 'Laptop charger': 0.4, 'Phone charger + cable': 0.2,
+    'Noise-canceling headphones': 1.5, 'Headphone cable / charger': 0.2, 'Power bank': 0.3,
+    'Universal power adapter': 0.4
+  };
+  // Subtract items typically worn on the plane
+  const worn = new Set(['Blazer / sport coat','Heavy winter coat','Waterproof boots','Dress shoes','Comfortable walking shoes']);
+  let total = 0;
+  for (const cat of cats) {
+    for (const it of cat.items) {
+      const s = sizes[it.name];
+      if (!s) continue;
+      if (worn.has(it.name)) continue;
+      total += s * it.qty;
+    }
+  }
+  return Math.round(total);
+}
+
+function renderPackingList(trip, result) {
+  // Warnings
+  const warnBox = document.getElementById('packWarnBlock');
+  warnBox.innerHTML = result.warnings.map(w => `
+    <div class="pack-warn">
+      <div class="marker">!</div>
+      <div class="body"><strong>${escapeHtml(w.title)}</strong>${escapeHtml(w.body)}</div>
+    </div>
+  `).join('');
+
+  // List
+  const list = document.getElementById('packingList');
+  const checked = trip.checked || {};
+  list.innerHTML = result.cats.map(cat => {
+    if (!cat.items.length) return '';
+    const total = cat.items.reduce((s,i) => s + (i.qty || 1), 0);
+    return `
+      <div class="pack-category">
+        <div class="pack-category-head">
+          <h4>${escapeHtml(cat.name)}</h4>
+          <div class="count">${total} ITEM${total===1?'':'S'}</div>
+        </div>
+        ${cat.items.map(it => {
+          const key = cat.name + '::' + it.name;
+          const isChecked = !!checked[key];
+          return `
+            <div class="pack-item ${isChecked ? 'checked' : ''}" data-key="${escapeHtml(key)}">
+              <div class="check"></div>
+              <div class="item-name">${escapeHtml(it.name)}${it.note ? ` <span class="note">${escapeHtml(it.note)}</span>` : ''}</div>
+              <div class="qty">×${it.qty}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+
+  // Check toggling
+  list.querySelectorAll('.pack-item').forEach(el => {
+    el.onclick = () => {
+      const key = el.dataset.key;
+      const t = getTrip(trip.id);
+      t.checked = t.checked || {};
+      t.checked[key] = !t.checked[key];
+      upsertTrip(t);
+      el.classList.toggle('checked');
+    };
+  });
+}
+
+// ---------- Flights / Hotels / Ground launchers ----------
+function renderFlights(trip) {
+  const isBusiness = trip.types.includes('business');
+  // Try to resolve destination to nearest major airport — best-effort, we just pass city to Delta search
+  const dest = encodeURIComponent(trip.destLabel.split(',')[0].trim());
+  // Delta deep link (subject to change; route via main flight search)
+  const deltaUrl = `https://www.delta.com/flight-search/book-a-flight?tripType=ROUND_TRIP&priceSchedule=PRICE&originCity=${PROFILE.homeAirport}&destinationCity=${dest}&departureDate=${trip.startDate}&returnDate=${trip.endDate}&paxCount=1`;
+  const googleUrl = `https://www.google.com/travel/flights?q=Flights%20from%20${PROFILE.homeAirport}%20to%20${dest}%20on%20${trip.startDate}%20returning%20${trip.endDate}`;
+
+  document.getElementById('flightBlock').innerHTML = `
+    <div class="launcher-grid">
+      <a class="launcher full-width" href="${deltaUrl}" target="_blank" rel="noopener">
+        <div class="lbl">Delta · PSC → ${escapeHtml(trip.destLabel.split(',')[0])}</div>
+        <div class="name">Search Delta flights</div>
+        <div class="hint">${fmtDate(trip.startDate)} → ${fmtDate(trip.endDate)} · Filter for early-morning departures on results page.</div>
+      </a>
+      <a class="launcher full-width" href="${googleUrl}" target="_blank" rel="noopener" style="background:var(--surface-2)">
+        <div class="lbl">Backup · Compare prices</div>
+        <div class="name">Google Flights</div>
+        <div class="hint">Same dates, all airlines — sanity check Delta's pricing.</div>
+      </a>
+    </div>
+  `;
+}
+
+function renderHotels(trip) {
+  const isBusiness = trip.types.includes('business');
+  const dest = encodeURIComponent(trip.destLabel);
+  const destShort = encodeURIComponent(trip.destLabel.split(',')[0].trim());
+
+  // Marriott — uses MM/DD/YYYY in URL, clusterCode=GOV for federal government rate
+  const mFrom = fmtUSDate(trip.startDate);
+  const mTo = fmtUSDate(trip.endDate);
+  const govParam = isBusiness && PROFILE.govRateEligible ? '&clusterCode=GOV' : '';
+  const marriottUrl = `https://www.marriott.com/search/findHotels.mi?destinationAddress.destination=${dest}&fromDate=${encodeURIComponent(mFrom)}&toDate=${encodeURIComponent(mTo)}&numberOfRooms=1&numberOfGuests=1${govParam}`;
+
+  // Hilton — ISO dates, specialRates=GVT for federal government rate
+  const hSpecial = isBusiness && PROFILE.govRateEligible ? '&specialRates=GVT' : '';
+  const hiltonUrl = `https://www.hilton.com/en/search/?query=${dest}&arrivalDate=${trip.startDate}&departureDate=${trip.endDate}${hSpecial}`;
+
+  const govBadge = isBusiness ? '<div class="gov-flag">GOV RATE</div>' : '';
+
+  document.getElementById('hotelBlock').innerHTML = `
+    <div class="launcher-grid">
+      <a class="launcher" href="${marriottUrl}" target="_blank" rel="noopener">
+        ${govBadge}
+        <div class="lbl">Bonvoy</div>
+        <div class="name">Marriott</div>
+        <div class="hint">${isBusiness ? 'Rate code <strong>GOV</strong> applied.' : 'Standard rate.'}</div>
+      </a>
+      <a class="launcher" href="${hiltonUrl}" target="_blank" rel="noopener">
+        ${govBadge}
+        <div class="lbl">Honors</div>
+        <div class="name">Hilton</div>
+        <div class="hint">${isBusiness ? 'Rate code <strong>GVT</strong> applied.' : 'Standard rate.'}</div>
+      </a>
+    </div>
+    ${isBusiness ? `<p class="helper-text">Federal government rates require valid ID at check-in. Verify per-diem caps via <strong>defensetravel.dod.mil</strong> or <strong>gsa.gov/travel</strong>.</p>` : ''}
+  `;
+}
+
+function renderGround(trip) {
+  const dest = encodeURIComponent(trip.destLabel);
+  // Uber deep link — dropoff hint
+  const uberUrl = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${dest}`;
+  // Hertz (Delta partner) — pre-fill date strings where supported
+  const hertzUrl = `https://www.hertz.com/rentacar/reservation/?puDate=${trip.startDate}&doDate=${trip.endDate}`;
+  // Kayak as comparison
+  const kayakUrl = `https://www.kayak.com/cars/${dest}/${trip.startDate}/${trip.endDate}`;
+
+  document.getElementById('groundBlock').innerHTML = `
+    <div class="launcher-grid">
+      <a class="launcher" href="${hertzUrl}" target="_blank" rel="noopener">
+        <div class="lbl">Delta partner</div>
+        <div class="name">Hertz rental</div>
+        <div class="hint">Earn SkyMiles. Pickup details on landing page.</div>
+      </a>
+      <a class="launcher" href="${uberUrl}" target="_blank" rel="noopener">
+        <div class="lbl">Rideshare</div>
+        <div class="name">Uber</div>
+        <div class="hint">Opens Uber to destination.</div>
+      </a>
+      <a class="launcher full-width" href="${kayakUrl}" target="_blank" rel="noopener" style="background:var(--surface-2)">
+        <div class="lbl">Backup · Compare</div>
+        <div class="name">Kayak — all car rentals</div>
+        <div class="hint">Sanity check Hertz pricing across providers.</div>
+      </a>
+    </div>
+  `;
+}
+
+// ---------- Saved confirmations ----------
+function renderSaved(trip) {
+  const saved = trip.saved || {};
+  const fields = [
+    { key: 'flight', label: 'Flight', placeholder: 'e.g. DL 1234 · confirmation ABC123' },
+    { key: 'hotel', label: 'Hotel', placeholder: 'Hotel name · confirmation #' },
+    { key: 'car', label: 'Car / ride', placeholder: 'Hertz conf · or Uber notes' },
+    { key: 'other', label: 'Other', placeholder: 'Anything else worth saving' }
+  ];
+  const box = document.getElementById('savedBlock');
+  box.innerHTML = fields.map(f => {
+    const val = saved[f.key] || '';
+    return `
+      <div class="save-confirm-input">
+        <input type="text" data-key="${f.key}" placeholder="${escapeHtml(f.label)} — ${escapeHtml(f.placeholder)}" value="${escapeHtml(val)}">
+        <button data-action="save" data-key="${f.key}">Save</button>
+      </div>
+    `;
+  }).join('');
+  box.querySelectorAll('button[data-action="save"]').forEach(btn => {
+    btn.onclick = () => {
+      const k = btn.dataset.key;
+      const inp = box.querySelector(`input[data-key="${k}"]`);
+      const t = getTrip(trip.id);
+      t.saved = t.saved || {};
+      t.saved[k] = inp.value.trim();
+      upsertTrip(t);
+      btn.textContent = 'Saved ✓';
+      setTimeout(() => btn.textContent = 'Save', 1200);
+    };
+  });
+}
+
+// ---------- Edit trip ----------
+document.getElementById('editTripBtn').onclick = () => {
+  showView('form', { tripId: viewingTripId });
+};
+
+// ---------- Utilities ----------
+function daysBetween(a, b) {
+  const d1 = new Date(a + 'T00:00:00');
+  const d2 = new Date(b + 'T00:00:00');
+  return Math.round((d2 - d1) / 86400000);
+}
+function nightsBetween(a, b) { return Math.max(0, daysBetween(a,b)); }
+function fmtDate(s) {
+  const d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function fmtUSDate(s) {
+  const d = new Date(s + 'T00:00:00');
+  return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}/${d.getFullYear()}`;
+}
+function avg(arr) {
+  if (!arr || arr.length === 0) return 0;
+  return arr.reduce((a,b) => a + b, 0) / arr.length;
+}
+function isUSCountry(c) {
+  return /^(United States|USA|US)$/i.test(c || '');
+}
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- Manifest (inline) ----------
+const manifest = {
+  name: 'Travel Time',
+  short_name: 'Travel Time',
+  description: 'Weather-aware packing and travel booking launcher',
+  start_url: '.',
+  display: 'standalone',
+  background_color: '#F4EFE6',
+  theme_color: '#1B1F23',
+  orientation: 'portrait',
+  icons: [
+    {
+      src: 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#1B1F23"/><path d="M128 256 L384 128 L320 256 L384 384 Z" fill="#B8451F"/><circle cx="256" cy="256" r="12" fill="#F4EFE6"/></svg>`),
+      sizes: '512x512',
+      type: 'image/svg+xml',
+      purpose: 'any'
+    }
+  ]
+};
+const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = URL.createObjectURL(manifestBlob);
+document.head.appendChild(manifestLink);
+
+// ---------- Install hint ----------
+function dismissInstallHint() {
+  document.getElementById('installHint').classList.remove('show');
+  localStorage.setItem('tt_hintDismissed', '1');
+}
+(function showHintIfNeeded() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const dismissed = localStorage.getItem('tt_hintDismissed');
+  if (!isStandalone && !dismissed) {
+    document.getElementById('installHint').classList.add('show');
+  }
+})();
+
+// ---------- Local-file detection (mobile cannot fetch from file://) ----------
+(function checkFileProtocol() {
+  if (window.location.protocol !== 'file:') return;
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:var(--ink);color:var(--bg);padding:16px 18px;margin:16px 20px 0;border-radius:var(--radius);font-size:13px;line-height:1.5;border-left:4px solid var(--accent)';
+  banner.innerHTML = `
+    <strong style="font-family:var(--font-display);font-size:16px;display:block;margin-bottom:6px;color:var(--accent)">Hosting required for mobile</strong>
+    This file is open as a <code style="font-family:var(--font-mono);font-size:11px;background:rgba(255,255,255,0.12);padding:1px 5px;border-radius:3px">file://</code> URL. Mobile browsers block network calls from local files — so destination search and weather will fail.<br><br>
+    <strong style="font-family:var(--font-display);font-size:14px">Fix in 60 seconds:</strong><br>
+    1. On your phone, open <strong>app.netlify.com/drop</strong> in Chrome<br>
+    2. Tap the upload area, pick this HTML file<br>
+    3. Open the HTTPS URL Netlify gives you<br>
+    4. Chrome menu → <strong>Install app</strong>
+  `;
+  const homeView = document.getElementById('view-home');
+  homeView.insertBefore(banner, homeView.firstChild);
+})();
+
+// ---------- Boot ----------
+renderHome();
+</script>
+</body>
+</html>
